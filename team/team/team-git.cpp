@@ -1,5 +1,5 @@
 #include<iostream>
 
-int square(int w) {
+int circle(int w) {
 	return w * w * 3.14;
 }
