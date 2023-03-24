@@ -1,5 +1,5 @@
-#include <iostream>
+#include<iostream>
 
-int main() {
-	std::cout << "hello";
+int square(int w) {
+	return w * w * 3.14;
 }
