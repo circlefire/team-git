@@ -24,6 +24,8 @@ const string server = "tcp://127.0.0.1:3306"; // 데이터베이스 주소
 const string username = "user"; // 데이터베이스 사용자
 const string password = "1234"; // 데이터베이스 접속 비밀번호
 
+string chat_log = "";
+
 struct SOCKET_INFO {
 	SOCKET sck;
 	string user;
@@ -74,8 +76,10 @@ int main() {
 			std::getline(cin, text);
 			const char* buf = text.c_str();
 
-			msg = server_sock.user + " : " + buf;
-
+			msg = server_sock.user + ": " + buf;
+			
+			chat_log += msg + '\n';
+			
 			send_msg(msg.c_str());
 		}
 		for (int i = 0; i < MAX_CLIENT; i++) {
@@ -156,6 +160,9 @@ void add_client() {
 	cout << "[공지] 현재 접속자 수: " << client_count << "명" << endl;
 	send_msg(msg.c_str());
 
+	chat_log += msg + '\n';
+	if (client_count > 1) send_msg(chat_log.c_str());
+
 	th.join();
 }
 void send_msg(const char* msg) {
@@ -170,14 +177,20 @@ void recv_msg(int idx) {
 		ZeroMemory(&buf, MAX_SIZE);
 		if (recv(sck_list[idx].sck, buf, MAX_SIZE, 0) > 0) {
 			//만약 정상적으로 받았다면
-			msg = sck_list[idx].user.substr(0, sck_list[idx].user.find("/")) + ':' + buf;
+			msg = sck_list[idx].user.substr(0, sck_list[idx].user.find("/")) + ": " + buf;
 			cout << msg << endl;
+
+			chat_log += msg + '\n';
+
 			send_msg(msg.c_str());
 		}
 		else {
 			msg = "[공지] " + sck_list[idx].user.substr(0, sck_list[idx].user.find("/")) + "님이 퇴장했습니다.";
 			cout << msg << endl;
 			send_msg(msg.c_str());
+			
+			chat_log += msg + '\n';
+
 			del_client(idx);
 			return;
 		}
