@@ -160,8 +160,11 @@ void add_client() {
 	cout << "[공지] 현재 접속자 수: " << client_count << "명" << endl;
 	send_msg(msg.c_str());
 
-	chat_log += msg + '\n';
-	if (client_count > 1) send_msg(chat_log.c_str());
+
+	if (client_count > 1) {
+		//chat_log += "----------이전의 대화 내용을 불러옵니다-----------";
+		send_msg(chat_log.c_str());
+	}
 
 	th.join();
 }
