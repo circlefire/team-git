@@ -48,6 +48,7 @@ void add_client();
 // 3. 클라이언트에 msg 보내기
 // send()
 void send_msg(const char* msg);
+void send_clog(int k, const char* chat_log);
 
 // 4. 클라이언트에게 채팅 내용을 받음
 // 퇴장했다면 퇴장했습니다 공지 띄워줌
@@ -77,9 +78,9 @@ int main() {
 			const char* buf = text.c_str();
 
 			msg = server_sock.user + ": " + buf;
-			
+
 			chat_log += msg + '\n';
-			
+
 			send_msg(msg.c_str());
 		}
 		for (int i = 0; i < MAX_CLIENT; i++) {
@@ -159,12 +160,7 @@ void add_client() {
 	client_count++;
 	cout << "[공지] 현재 접속자 수: " << client_count << "명" << endl;
 	send_msg(msg.c_str());
-
-
-	if (client_count > 1) {
-		//chat_log += "----------이전의 대화 내용을 불러옵니다-----------";
-		send_msg(chat_log.c_str());
-	}
+	send_clog(client_count-1, chat_log.c_str());
 
 	th.join();
 }
@@ -173,6 +169,12 @@ void send_msg(const char* msg) {
 		send(sck_list[i].sck, msg, MAX_SIZE, 0);
 	}
 }
+void send_clog(int k, const char* chat_log) {
+	for (int j = k; j < client_count; j++) {
+		send(sck_list[j].sck, chat_log, MAX_SIZE, 0);
+	}
+}
+
 void recv_msg(int idx) {
 	char buf[MAX_SIZE] = {};
 	string msg = "";
@@ -191,7 +193,7 @@ void recv_msg(int idx) {
 			msg = "[공지] " + sck_list[idx].user.substr(0, sck_list[idx].user.find("/")) + "님이 퇴장했습니다.";
 			cout << msg << endl;
 			send_msg(msg.c_str());
-			
+
 			chat_log += msg + '\n';
 
 			del_client(idx);
