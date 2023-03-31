@@ -140,15 +140,12 @@ int main() {
 			cout << "connecting..." << endl;
 		}
 		std::thread th2(chat_recv);
-
-
 		while (1) {
 			string text;
 			std::getline(cin, text);
 			const char* buffer = text.c_str();
 			send(client_sock, buffer, strlen(buffer), 0);
 		}
-
 		th2.join();
 		closesocket(client_sock);
 	}

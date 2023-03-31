@@ -59,7 +59,6 @@ void del_client(int idx);
 
 int main() {
 	WSADATA wsa;
-
 	int code = WSAStartup(MAKEWORD(2, 2), &wsa);
 	// winsock version 2.2 사용
 	// winsock 초기화 하는 함수
@@ -71,7 +70,6 @@ int main() {
 		for (int i = 0; i < MAX_CLIENT; i++) {
 			th1[i] = std::thread(add_client);
 		}
-
 		while (1) {
 			string text, msg = "";
 			std::getline(cin, text);
@@ -102,7 +100,6 @@ void server_init() {
 	- 통신 타입 설정
 	- 어떤 프로토콜 사용할지
 	*/
-
 	sql::Driver* driver;
 	sql::Connection* con{};
 	sql::PreparedStatement* pstmt;
@@ -189,11 +186,13 @@ void add_client() {
 	
 	th.join();
 }
+
 void send_msg(const char* msg) {
 	for (int i = 0; i < client_count; i++) {
 		send(sck_list[i].sck, msg, MAX_SIZE, 0);
 	}
 }
+
 void send_clog(int k, const char* chat_log) {
 	for (int j = k; j < client_count; j++) {
 		send(sck_list[j].sck, chat_log, MAX_SIZE, 0);
@@ -226,6 +225,7 @@ void recv_msg(int idx) {
 		}
 	}
 }
+
 void del_client(int idx) {
 	closesocket(sck_list[idx].sck);
 	client_count--;
