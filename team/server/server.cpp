@@ -103,6 +103,28 @@ void server_init() {
 	- 어떤 프로토콜 사용할지
 	*/
 
+	sql::Driver* driver;
+	sql::Connection* con{};
+	sql::PreparedStatement* pstmt;
+	sql::ResultSet* result;
+
+	try {
+		driver = get_driver_instance();
+		con = driver->connect(server, username, password);
+		con->setSchema("chat_db");
+	}
+	catch (sql::SQLException& e) {
+		cout << "# ERR: SQLException in " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+		cout << "# ERR: " << e.what();
+		cout << " (MySQL error code: " << e.getErrorCode();
+		cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+	}
+
+	pstmt = con->prepareStatement("UPDATE chat_table SET is_use = ?");
+	pstmt->setString(1, "n");
+	result = pstmt->executeQuery();
+
 	SOCKADDR_IN server_addr = {};
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(7777);
@@ -160,8 +182,11 @@ void add_client() {
 	client_count++;
 	cout << "[공지] 현재 접속자 수: " << client_count << "명" << endl;
 	send_msg(msg.c_str());
-	send_clog(client_count-1, chat_log.c_str());
-
+	if (client_count == 1) {
+		send_clog(client_count - 1, chat_log.c_str());
+	}
+	else send_clog(client_count - 1, (chat_log + "-------이전까지의 대화를 불러옵니다--------").c_str());
+	
 	th.join();
 }
 void send_msg(const char* msg) {

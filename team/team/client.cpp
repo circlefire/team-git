@@ -13,6 +13,7 @@
 #include <cppconn/resultset.h>
 #include <cppconn/prepared_statement.h>
 #define MAX_SIZE 1024
+
 using std::cout;
 using std::cin;
 using std::endl;
@@ -21,9 +22,9 @@ const string server = "tcp://127.0.0.1:3306"; // 데이터베이스 주소
 const string username = "user"; // 데이터베이스 사용자
 const string password = "1234"; // 데이터베이스 접속 비밀번호
 SOCKET client_sock;
-string id_pw, id_pw2;
-string id;
-string pw;
+
+string id_pw, id, pw;
+
 int chat_recv() {
 	char buf[MAX_SIZE] = {};
 	string msg;
@@ -42,6 +43,7 @@ int chat_recv() {
 		}
 	}
 }
+
 int main() {
 	sql::Driver* driver;
 	sql::Connection* con{};
@@ -82,9 +84,10 @@ int main() {
 				else {
 					cout << "PW를 입력하세요.";
 					cin >> pw;
-					pstmt = con->prepareStatement("INSERT INTO chat_table(user_id, user_pw) VALUES(?,?)");
+					pstmt = con->prepareStatement("INSERT INTO chat_table(user_id, user_pw, is_use) VALUES(?,?,?)");
 					pstmt->setString(1, id);
 					pstmt->setString(2, pw);
+					pstmt->setString(3, "n");
 					pstmt->execute();
 					cout << "ID 생성이 완료되었습니다." << endl;
 					return 0;
@@ -99,12 +102,16 @@ int main() {
 				string id = id_pw.substr(0, id_pw.find("/")); // '/'의 앞에 있는 단어를 id에 저장
 				string pw = id_pw.substr(id_pw.find("/") + 1); // '/'의 뒤에 있는단어를 pw에 저장
 				// MySQL DB에서 id와 password 값 비교하기
-				pstmt = con->prepareStatement("SELECT COUNT(*) as count FROM chat_table WHERE user_id='" + id + "' AND user_pw='" + pw + "'");
+				pstmt = con->prepareStatement("SELECT COUNT(*) as count FROM chat_table WHERE user_id='" + id + "' AND user_pw='" + pw + "' AND is_use != 'y'");
 				result = pstmt->executeQuery();
 				result->next();
 				int count = result->getInt("count");
 				// 로그인 결과 출력하기
 				if (count > 0) {
+					pstmt = con->prepareStatement("UPDATE chat_table SET is_use = ? WHERE user_id = ?");
+					pstmt->setString(1, "y");
+					pstmt->setString(2, id);
+					result = pstmt->executeQuery();
 					cout << "로그인 성공!" << endl;
 					break;
 				}
@@ -126,13 +133,17 @@ int main() {
 			}
 			cout << "connecting..." << endl;
 		}
-		std::thread th2(chat_recv);
+		std::thread th2(chat_recv); 
+		
+
 		while (1) {
 			string text;
 			std::getline(cin, text);
 			const char* buffer = text.c_str();
 			send(client_sock, buffer, strlen(buffer), 0);
 		}
+		
+
 		th2.join();
 		closesocket(client_sock);
 	}
