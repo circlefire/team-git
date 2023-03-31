@@ -182,8 +182,11 @@ void add_client() {
 	if (client_count == 1) {
 		send_clog(client_count - 1, chat_log.c_str());
 	}
+	else if (chat_log == "") {
+		send_clog(client_count - 1, chat_log.c_str());
+	}
 	else send_clog(client_count - 1, (chat_log + "--------이전까지의 대화를 불러옵니다--------").c_str());
-	
+
 	th.join();
 }
 
