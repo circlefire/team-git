@@ -149,7 +149,6 @@ int main() {
 			send(client_sock, buffer, strlen(buffer), 0);
 		}
 
-
 		th2.join();
 		closesocket(client_sock);
 	}
