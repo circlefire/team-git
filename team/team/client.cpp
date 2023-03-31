@@ -116,7 +116,13 @@ int main() {
 					break;
 				}
 				else {
-					cout << "아이디 또는 비밀번호가 일치하지 않습니다." << endl;
+					pstmt = con->prepareStatement("SELECT COUNT(*) as count FROM chat_table WHERE user_id='" + id + "' AND user_pw='" + pw + "' AND is_use != 'n'");
+					result = pstmt->executeQuery();
+					result->next();
+					int count = result->getInt("count");
+
+					if (count > 0) cout << "사용중인 아이디입니다." << endl;
+					else	cout << "아이디 또는 비밀번호가 일치하지 않습니다." << endl;
 				}
 			}
 		}
@@ -133,17 +139,13 @@ int main() {
 			}
 			cout << "connecting..." << endl;
 		}
-		std::thread th2(chat_recv); 
-		
-
+		std::thread th2(chat_recv);
 		while (1) {
 			string text;
 			std::getline(cin, text);
 			const char* buffer = text.c_str();
 			send(client_sock, buffer, strlen(buffer), 0);
 		}
-		
-
 		th2.join();
 		closesocket(client_sock);
 	}
